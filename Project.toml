@@ -3,7 +3,9 @@ authors = ["Filippo3001"]
 
 [deps]
 DrWatson = "634d3b9d-ee7a-5ddf-bec9-22491ea816e1"
+HypothesisTests = "09f84164-cd44-5f33-b23f-e6b0d136a0d5"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 
 [compat]
 DrWatson = "2.18.0"
