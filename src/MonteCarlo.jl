@@ -1,22 +1,56 @@
 module MonteCarlo
 
+using Random
+
 # Define a function which, give an importance sampling f(x) generate nMoves points using metropolis algorithm. Points can be either vectors of Float or Floats
-function metropolis(impsampling, nMoves, nThermMoves, metroStep, startingPoint)
-    acceptedPoints = Vector()
+# Define version for  multivariate importance samplings
+function metropolis(impsampling, nMoves, nThermMoves, metroStep, startingPoint::Vector{Float64})
+    # Allocate the vector to populate with the nMoves points
+    acceptedPoints = Vector{Vector{Float64}}(undef, nMoves)
+    point = copy(startingPoint)
+    # Allocate a vector which is used by rand! to generate the next point
+    trialStep = zeros(length(startingPoint))
+    f_r = impsampling(point)
+    naccepted = 0
+    for i in 1:nMoves
+        for j in 1:nThermMoves
+            # Use a for loop to evaluate the nex point to minimize allocations
+            for l in eachindex(trialStep)
+                trialStep[l] = point[l] + (rand() - 0.5) * metroStep
+            end
+            newf_r = impsampling(trialStep)
+            if newf_r > f_r || rand() < newf_r / f_r
+                point = trialStep
+                f_r = newf_r
+                naccepted += 1
+            end
+        end
+        acceptedPoints[i] = point
+        #push!(acceptedPoints, point)
+    end
+    rateofacceptance = naccepted / (nMoves * nThermMoves)
+    return acceptedPoints, rateofacceptance
+end
+
+# Function version for univariate importancesamplings
+function metropolis(impsampling, nMoves, nThermMoves, metroStep, startingPoint::Float64)
+    # Allocate the vector to populate with the nMoves points
+    acceptedPoints = Vector{Float64}(undef, nMoves)
     point = copy(startingPoint)
     f_r = impsampling(point)
     naccepted = 0
     for i in 1:nMoves
         for j in 1:nThermMoves
-            trialStep = point + (rand(Float64, size(point)) .- 0.5) .* metroStep
+            trialStep = point + (rand(Float64) - 0.5) * metroStep
             newf_r = impsampling(trialStep)
-            if newf_r > f_r || rand() < newf_r/f_r
+            if newf_r > f_r || rand() < newf_r / f_r
                 point = trialStep
-                f_r =  newf_r
+                f_r = newf_r
                 naccepted += 1
             end
         end
-        push!(acceptedPoints, point)
+        acceptedPoints[i] = point
+        #push!(acceptedPoints, point)
     end
     rateofacceptance = naccepted / (nMoves * nThermMoves)
     return acceptedPoints, rateofacceptance
@@ -33,8 +67,37 @@ function evaluate(points, h)
     end
     N = length(points)
     mean = SE / N
-    sigma = sqrt((SE2/N) - (SE/N)^2) / N
+    sigma = sqrt((SE2 / N) - (SE / N)^2) / N
     return mean, sigma
 end
 
-end    
+# Define a function which generate points and directly evaluate the integral. Shoul use much less memory
+function metropolis_and_evaluate(impsampling, nMoves, nThermMoves, metroStep, startingPoint, h)
+    point = copy(startingPoint)
+    f_r = impsampling(point)
+    naccepted = 0
+    SE = 0.
+    SE2 = 0.
+
+    for i in 1:nMoves
+        for j in 1:nThermMoves
+            trialStep = point + (rand(Float64, size(point)) .- 0.5) .* metroStep
+            newf_r = impsampling(trialStep)
+            if newf_r > f_r || rand() < newf_r / f_r
+                point = trialStep
+                f_r = newf_r
+                naccepted += 1
+            end
+        end
+        # Accumulate <h> and <h²>
+        SE += h(point)
+        SE += h(point)^2
+    end
+
+    mean = SE / nMoves
+    sigma = sqrt(abs((SE2 / nMoves) - (SE / nMoves)^2)) / nMoves
+    rateofacceptance = naccepted / (nMoves * nThermMoves)
+    return mean, sigma, rateofacceptance
+end
+
+end

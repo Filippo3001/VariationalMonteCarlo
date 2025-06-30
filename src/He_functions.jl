@@ -17,10 +17,11 @@ end
 # The He⁴ nucleus model has 12 dof represented by the positon vector r = [r₁,r₂,r₃,r₄]; where every rᵢ is a 3D vector which represents the position of the i-nth nucleons
 # Since internucleus distances are used multiple times, define a function which returns them
 function internucleusd(r)
-    r1 = r[1:3]
-    r2 = r[4:6]
-    r3 = r[7:9]
-    r4 = r[10:12]
+    # Separate from r the 4 position vectors, using @view to not allocate
+    r1 = @view r[1:3]
+    r2 = @view r[4:6]
+    r3 = @view r[7:9]
+    r4 = @view r[10:12]
 
     return vecdistance(r1, r2), vecdistance(r1, r3), vecdistance(r1, r4), vecdistance(r2, r3), vecdistance(r2, r4), vecdistance(r3, r4)
 end
@@ -37,6 +38,12 @@ function Hetrialfunction(par::Vector{Float64}, r::Vector{Float64})
     * Jastrow_factor(par, r_14) * Jastrow_factor(par, r_23) 
     * Jastrow_factor(par, r_24) * Jastrow_factor(par, r_34))
 
+end
+
+function Heimpsampling(par::Vector{Float64})
+    function inner(r::Vector{Float64})
+        Hetrialfunction(par, r)^2
+    end
 end
 
 # Define a function which return the i-nth standard basis vector of dimension N
@@ -97,11 +104,12 @@ function Hehamiltonian(par::Vector{Float64}, r::Vector{Float64})
 end
 
 # Construct the local energy
-function Helocalen(par, r)
+function Helocalen(par)
     @assert(length(par) == 3)
-    @assert(length(r) == 12)
-
-    Hehamiltonian(par, r) / Hetrialfunction(par, r)
+    function inner(r)
+        @assert(length(r) == 12)
+        Hehamiltonian(par, r) / Hetrialfunction(par, r)
+    end
 end
 
 end
