@@ -5,7 +5,7 @@ import ForwardDiff
 using LinearAlgebra
 # Define the  function necesary to study the 1D Harmonic oscillator
 function harmtrialstate(x, alpha)
-    (sqrt(alpha) / pi^(0.25)) * exp(- 0.5 * alpha^2 * x^2)
+    (sqrt(alpha) / pi^(0.25)) * exp(-0.5 * alpha^2 * x^2)
 
 end
 
@@ -16,8 +16,8 @@ function harmimpsampling(alpha::Float64)
 end
 
 function harmHamiltonian(x, alpha)
-    kinPart = - second_derivative(harmtrialstate, AutoForwardDiff(), x, Constant(alpha))
-    potPart = x^2* harmtrialstate(x, alpha)
+    kinPart = -second_derivative(harmtrialstate, AutoForwardDiff(), x, Constant(alpha))
+    potPart = x^2 * harmtrialstate(x, alpha)
     kinPart + potPart
 end
 

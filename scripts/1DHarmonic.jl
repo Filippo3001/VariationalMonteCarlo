@@ -26,7 +26,7 @@ sigmas = Vector{Float64}()
 
 for alpha in alphas
     # Generate points for the given alpha
-    points, roa = MonteCarlo.metropolis(OneDHarm.harmimpsampling(alpha), nMoves, nThermMoves, metroStep,  startingPoint)
+    points, roa = MonteCarlo.metropolis(OneDHarm.harmimpsampling(alpha), nMoves, nThermMoves, metroStep, startingPoint)
     # Evaluate the results
     mean, sigma = MonteCarlo.evaluate(points, OneDHarm.harmlocalen(alpha))
     println(mean, "  +/-  ", sigma)
@@ -34,4 +34,4 @@ for alpha in alphas
     push!(sigmas, sigma)
 end
 
-scatter(alphas, means; yerror = sigmas)
+scatter(alphas, means; yerror=sigmas)

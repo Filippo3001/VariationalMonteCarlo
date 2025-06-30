@@ -4,12 +4,12 @@ using Enzyme
 
 # Define first the Jastrow factors to then construct the trial state function.  par = [a, β, γ], r is a number
 function Jastrow_factor(par::Vector{Float64}, r::Float64)
-    exp( - par[3] * r^2) + par[1] * exp(- (par[2] + par[1]) * r^2)
+    exp(-par[3] * r^2) + par[1] * exp(-(par[2] + par[1]) * r^2)
 end
 
 # Define the distance between two vectors
 function vecdistance(r1, r2)
-    @assert(length(r1) == length(r2)) 
+    @assert(length(r1) == length(r2))
     sqrt(sum((r1[i] - r2[i])^2 for i in eachindex(r1)))
 end
 
@@ -34,9 +34,9 @@ function Hetrialfunction(par::Vector{Float64}, r::Vector{Float64})
     # Evaluate the internucleons distances
     r_12, r_13, r_14, r_23, r_24, r_34 = internucleusd(r)
 
-    (Jastrow_factor(par, r_12) * Jastrow_factor(par, r_13) 
-    * Jastrow_factor(par, r_14) * Jastrow_factor(par, r_23) 
-    * Jastrow_factor(par, r_24) * Jastrow_factor(par, r_34))
+    (Jastrow_factor(par, r_12) * Jastrow_factor(par, r_13)
+     * Jastrow_factor(par, r_14) * Jastrow_factor(par, r_23)
+     * Jastrow_factor(par, r_24) * Jastrow_factor(par, r_34))
 
 end
 
@@ -57,8 +57,9 @@ end
 # Only 2 bodies interaction are considered
 # Consider a S3 potential dependant only on the internucleus distance
 function S3Pot(r)
-    (1000 * exp(-3  *  r^2) - 163.5 * exp(-1.05  *  r^2) - 21.5 * exp(-0.6  *  r^2)
-    - 83 * exp(-0.8  *  r^2) - 11.5 * exp(-0.4  *  r^2))
+    (1000 * exp(-3 * r^2) - 163.5 * exp(-1.05 * r^2) - 21.5 * exp(-0.6 * r^2)
+     -
+     83 * exp(-0.8 * r^2) - 11.5 * exp(-0.4 * r^2))
 end
 
 # Define the potential for the He⁴ HeNucleus
@@ -98,7 +99,7 @@ function Hehamiltonian(par::Vector{Float64}, r::Vector{Float64})
     @assert(length(par) == 3)
     @assert(length(r) == 12)
     # Evaluate the kinetic kinetic part
-    kinPart = - Laplacian_Hetrialfunction(par, r)
+    kinPart = -Laplacian_Hetrialfunction(par, r)
     potPart = HeS3Pot(r) * Hetrialfunction(par, r)
     kinPart + potPart
 end

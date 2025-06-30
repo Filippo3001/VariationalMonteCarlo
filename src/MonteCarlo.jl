@@ -16,7 +16,7 @@ function metropolis(impsampling, nMoves, nThermMoves, metroStep, startingPoint::
         for j in 1:nThermMoves
             # Use a for loop to evaluate the nex point to minimize allocations
             for l in eachindex(trialStep)
-                trialStep[l] = point[l] + (rand() - 0.5) * metroStep
+                trialStep[l] = point[l] + (rand() - 0.5) * metroStep # need to be tested, may not work as expected
             end
             newf_r = impsampling(trialStep)
             if newf_r > f_r || rand() < newf_r / f_r
