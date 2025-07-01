@@ -4,7 +4,7 @@ using Enzyme
 
 # Define first the Jastrow factors to then construct the trial state function.  par = [a, β, γ], r is a number
 function Jastrow_factor(par::Vector{Float64}, r::Float64)
-    exp(-par[3] * r^2) + par[1] * exp(-(par[2] + par[1]) * r^2)
+    exp(-par[3] * r^2) + par[1] * exp(-(par[2] + par[3]) * r^2)
 end
 
 # Define the distance between two vectors

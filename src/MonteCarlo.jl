@@ -7,7 +7,7 @@ using Random
 function metropolis(impsampling, nMoves, nThermMoves, metroStep, startingPoint::Vector{Float64})
     # Allocate the vector to populate with the nMoves points
     acceptedPoints = Vector{Vector{Float64}}(undef, nMoves)
-    point = copy(startingPoint)
+    point = deepcopy(startingPoint)
     # Allocate a vector which is used by rand! to generate the next point
     trialStep = zeros(length(startingPoint))
     f_r = impsampling(point)
@@ -20,7 +20,8 @@ function metropolis(impsampling, nMoves, nThermMoves, metroStep, startingPoint::
             end
             newf_r = impsampling(trialStep)
             if newf_r > f_r || rand() < newf_r / f_r
-                point = trialStep
+                #point .= trialStep # To modify
+                point = deepcopy(trialStep)
                 f_r = newf_r
                 naccepted += 1
             end
@@ -36,7 +37,7 @@ end
 function metropolis(impsampling, nMoves, nThermMoves, metroStep, startingPoint::Float64)
     # Allocate the vector to populate with the nMoves points
     acceptedPoints = Vector{Float64}(undef, nMoves)
-    point = copy(startingPoint)
+    point = deepcopy(startingPoint)
     f_r = impsampling(point)
     naccepted = 0
     for i in 1:nMoves
@@ -99,5 +100,27 @@ function metropolis_and_evaluate(impsampling, nMoves, nThermMoves, metroStep, st
     rateofacceptance = naccepted / (nMoves * nThermMoves)
     return mean, sigma, rateofacceptance
 end
+
+function old_metropolis(impsampling, nMoves, nThermMoves, metroStep, startingPoint::Vector{Float64})
+    acceptedPoints = Vector{Vector{Float64}}()
+    point = copy(startingPoint)
+    f_r = impsampling(point)
+    naccepted = 0
+    for i in 1:nMoves
+        for j in 1:nThermMoves
+            trialStep = point + (rand(Float64, size(point)) .- 0.5) .* metroStep
+            newf_r = impsampling(trialStep)
+            if newf_r > f_r || rand() < newf_r/f_r
+                point = trialStep
+                f_r =  newf_r
+                naccepted += 1
+            end
+        end
+        push!(acceptedPoints, point)
+    end
+    rateofacceptance = naccepted / (nMoves * nThermMoves)
+    return acceptedPoints, rateofacceptance
+end
+    
 
 end
