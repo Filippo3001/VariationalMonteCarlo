@@ -57,9 +57,9 @@ end
 # Only 2 bodies interaction are considered
 # Consider a S3 potential dependant only on the internucleus distance
 function S3Pot(r)
-    (1000 * exp(-3 * r^2) - 163.5 * exp(-1.05 * r^2) - 21.5 * exp(-0.6 * r^2)
+    (1000.0 * exp(-3.0 * r^2) - 163.5 * exp(-1.05 * r^2) - 21.5 * exp(-0.6 * r^2)
      -
-     83 * exp(-0.8 * r^2) - 11.5 * exp(-0.4 * r^2))
+     83.0 * exp(-0.8 * r^2) - 11.5 * exp(-0.4 * r^2))
 end
 
 # Define the potential for the He⁴ HeNucleus
@@ -99,7 +99,8 @@ function Hehamiltonian(par::Vector{Float64}, r::Vector{Float64})
     @assert(length(par) == 3)
     @assert(length(r) == 12)
     # Evaluate the kinetic kinetic part
-    kinPart = -Laplacian_Hetrialfunction(par, r)
+    h2d2m = 20.74
+    kinPart = -h2d2m * Laplacian_Hetrialfunction(par, r)
     potPart = HeS3Pot(r) * Hetrialfunction(par, r)
     kinPart + potPart
 end
@@ -110,6 +111,36 @@ function Helocalen(par)
     function inner(r)
         @assert(length(r) == 12)
         Hehamiltonian(par, r) / Hetrialfunction(par, r)
+    end
+end
+
+# Define a function which acts on r = (r1,r2,r3,r4) and return the centerofmass
+function centerofmass(r)
+    # Separate the 4 positions vectors
+    r1 = @view r[1:3]
+    r2 = @view r[4:6]
+    r3 = @view r[7:9]
+    r4 = @view r[10:12]
+    cm = Vector{Float64}(undef, 3)
+    for i in eachindex(cm)
+        cm[i] = 0.25 * (r1[i] + r2[i] + r3[i] + r4[i])
+    end
+    cm
+end
+
+# Define a function which recenter r =(r1,r2,r3,r4) around its center of mass
+function recenter!(r)
+    # Separate the 4 positions vectors
+    r1 = @view r[1:3]
+    r2 = @view r[4:6]
+    r3 = @view r[7:9]
+    r4 = @view r[10:12]
+    cm = centerofmass(r)
+    for i in eachindex(cm)
+        r1[i] -= cm[i]
+        r2[i] -= cm[i]
+        r3[i] -= cm[i]
+        r4[i] -= cm[i]
     end
 end
 
