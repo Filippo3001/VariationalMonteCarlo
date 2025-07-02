@@ -36,8 +36,8 @@ end
 # Function version for univariate importancesamplings
 function metropolis(impsampling, nMoves, nThermMoves, metroStep, startingPoint::Float64)
     # Allocate the vector to populate with the nMoves points
-    acceptedPoints = Vector{Float64}(undef, nMoves)
-    point = deepcopy(startingPoint)
+    acceptedPoints = zeros(nMoves)
+    point = startingPoint
     f_r = impsampling(point)
     naccepted = 0
     for i in 1:nMoves
