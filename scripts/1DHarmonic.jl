@@ -4,6 +4,7 @@ using DrWatson
 # Include modules from src
 includet(srcdir("MonteCarlo.jl"))
 includet(srcdir("1DHarm_functions.jl"))
+includet(srcdir("simulations.jl"))
 
 # Start the plotting module
 using Plots
@@ -18,20 +19,35 @@ nThermMoves = 100
 metroStep = 1.0
 startingPoint = 0.0
 
+#Create the dictionaries for simulations
+d = Dict()
+d[:nMoves] = nMoves
+d[:nThermMoves] = nThermMoves
+d[:metroStep] = metroStep
+d[:startingPoint] = startingPoint
+d[:alpha] = alphas
+
+#Then create all possible input combinations
+dicts = dict_list(d)
+
+#Then evaluate for each combination
+map(simulation_onedharm, dicts)
+
+
 # Initialize the vector in which to store points
 #points = Vector{Float64}(undef, nMoves)
 # Initialize the vectors in  which to store the results
-means = Vector{Float64}()
-sigmas = Vector{Float64}()
+#means = Vector{Float64}()
+#sigmas = Vector{Float64}()
 
-for alpha in alphas
+#for alpha in alphas
     # Generate points for the given alpha
-    points, roa = MonteCarlo.metropolis(OneDHarm.harmimpsampling(alpha), nMoves, nThermMoves, metroStep, startingPoint)
+#    points, roa = MonteCarlo.metropolis(OneDHarm.harmimpsampling(alpha), nMoves, nThermMoves, metroStep, startingPoint)
     # Evaluate the results
-    mean, sigma = MonteCarlo.evaluate(points, OneDHarm.harmlocalen(alpha))
-    println(mean, "  +/-  ", sigma)
-    push!(means, mean)
-    push!(sigmas, sigma)
-end
+#    mean, sigma = MonteCarlo.evaluate(points, OneDHarm.harmlocalen(alpha))
+#    println(mean, "  +/-  ", sigma)
+#    push!(means, mean)
+#    push!(sigmas, sigma)
+#end
 
-scatter(alphas, means; yerror=sigmas)
+#scatter(alphas, means; yerror=sigmas)

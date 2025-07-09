@@ -30,8 +30,8 @@ function simulation_onedharm(data)
     #        println(io, x)
     #    end
     #end
-    wsave(datadir("onedharm", "points", points_savename), @strdict points)
-    wsave(datadir("onedharm", "results", results_savename), @strdict points)
+    wsave(datadir("onedharm", "points", points_savename), @strdict alpha nMoves nThermMoves metroStep startingPoint points)
+    wsave(datadir("onedharm", "results", results_savename), @strdict alpha nMoves nThermMoves metroStep startingPoint mean sigma roa)
 
 
 end
