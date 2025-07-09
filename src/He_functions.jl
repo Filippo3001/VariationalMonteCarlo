@@ -1,16 +1,18 @@
+using DrWatson, Test
+@quickactivate "VariationalMonteCarlo"
 module HeNucleus
 
 using Enzyme
 
 # Define first the Jastrow factors to then construct the trial state function.  par = [a, β, γ], r is a number
-function Jastrow_factor(par::Vector{Float64}, r::Float64)
-    exp(-par[3] * r^2) + par[1] * exp(-(par[2] + par[3]) * r^2)
+function Jastrow_factor(par::Vector{Float64}, r2::Float64)
+    exp(-par[3] * r2) + par[1] * exp(-(par[2] + par[3]) * r2)
 end
 
 # Define the distance between two vectors
-function vecdistance(r1, r2)
+function vecdistance2(r1, r2)
     @assert(length(r1) == length(r2))
-    sqrt(sum((r1[i] - r2[i])^2 for i in eachindex(r1)))
+    sum((r1[i] - r2[i])^2 for i in eachindex(r1))
 end
 
 
@@ -23,7 +25,7 @@ function internucleusd(r)
     r3 = @view r[7:9]
     r4 = @view r[10:12]
 
-    return vecdistance(r1, r2), vecdistance(r1, r3), vecdistance(r1, r4), vecdistance(r2, r3), vecdistance(r2, r4), vecdistance(r3, r4)
+    return vecdistance2(r1, r2), vecdistance2(r1, r3), vecdistance2(r1, r4), vecdistance2(r2, r3), vecdistance2(r2, r4), vecdistance2(r3, r4)
 end
 
 # Define the trial state function. par = [a, β, γ], r is a 12 dimensional vector which represents the positions coordinates of the 4 nucleons
@@ -56,10 +58,10 @@ end
 # Define the potential.
 # Only 2 bodies interaction are considered
 # Consider a S3 potential dependant only on the internucleus distance
-function S3Pot(r)
-    (1000.0 * exp(-3.0 * r^2) - 163.5 * exp(-1.05 * r^2) - 21.5 * exp(-0.6 * r^2)
+function S3Pot(r2)
+    (1000.0 * exp(-3.0 * r2) - 163.5 * exp(-1.05 * r2) - 21.5 * exp(-0.6 * r2)
      -
-     83.0 * exp(-0.8 * r^2) - 11.5 * exp(-0.4 * r^2))
+     83.0 * exp(-0.8 * r2) - 11.5 * exp(-0.4 * r2))
 end
 
 # Define the potential for the He⁴ HeNucleus
@@ -81,7 +83,7 @@ function Laplacian_Hetrialfunction(par::Vector{Float64}, r::Vector{Float64})
     @assert(length(par) == 3)
     @assert(length(r) == 12)
     # Evaluate the Laplacian using automatic differentiation from Enzyme.jl.
-    # Evaluate each row of the Hessian and consider only the diagonal elements δ²f/δx²
+    # Evaluate each row of the Hessian and consider only the diagonal elements ∂²f/∂x² 
     lapl = 0.
     row = Vector{Float64}(undef, length(r))
     for i in eachindex(r)
@@ -142,6 +144,36 @@ function recenter!(r)
         r3[i] -= cm[i]
         r4[i] -= cm[i]
     end
+end
+
+
+# Try with finite differences method to see if it gives the same results
+function Laplacian_Hetrialfunctiondiff(par::Vector{Float64}, r::Vector{Float64}, h::Float64)
+    # Verify the input are of the correct size
+    @assert(length(par) == 3)
+    @assert(length(r) == 12)
+    #Evaluate the laplacian using finite difference differentiation
+    #First define and allocate the two vectors rp and Random
+    rp = deepcopy(r)
+    rm = deepcopy(r)
+    #Define the variable in which we accumulate the laplacian
+    lapl = 0.
+    for i in eachindex(r)
+        #Calculate rp and rm for the i-th coordinate
+        rp[i] = r[i] + h
+        rm[i] = r[i] - h
+        #Evaluate the second derivative and sum it to the laplacian
+        second_deriv = (Hetrialfunction(par, rp) +  Hetrialfunction(par, rm) - 2*Hetrialfunction(par, r)) / (h^2)
+        lapl += second_deriv
+        #reset rp and rm to r
+        rp[i] = r[i]
+        rm[i] = r[i]
+    end
+    lapl
+end
+
+function Hehamiltoniandiff()
+    
 end
 
 end

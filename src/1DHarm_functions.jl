@@ -34,9 +34,7 @@ function harmlocalenan(alpha)
 end
 
 function harmresultsan(alpha)
-    function inner(x)
-
-    end
+    0.5 * alpha^2 + 1 / (2 * alpha^2)
 end
 
 end
