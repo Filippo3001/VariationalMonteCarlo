@@ -21,16 +21,10 @@ function simulation_onedharm(data)
     mean, sigma = MonteCarlo.evaluate(points, OneDHarm.harmlocalen(alpha))
     println(mean, "  +/-  ", sigma)
 
-    points_savename = savename("onedharm_points", data, "jld2")
+    #points_savename = savename("onedharm_points", data, "jld2")
     results_savename = savename("onedharm_results", data, "jld2")
 
-    #Save all points
-    #io = open(datadir("onedharm", "generated_points", points_savename), "w") do io
-    #    for x in points
-    #        println(io, x)
-    #    end
-    #end
-    wsave(datadir("onedharm", "points", points_savename), @strdict alpha nMoves nThermMoves metroStep startingPoint points)
+    #wsave(datadir("onedharm", "points", points_savename), @strdict alpha nMoves nThermMoves metroStep startingPoint points)
     wsave(datadir("onedharm", "results", results_savename), @strdict alpha nMoves nThermMoves metroStep startingPoint mean sigma roa)
 
 
@@ -51,5 +45,11 @@ function simulation_Henucleus(data)
 
     mean, sigma = MonteCarlo.evaluate(points, HeNucleus.Helocalen(par))
     println(mean, "  +/-  ", sigma)
+
+    #points_savename = savename("Henucleus_points", data, "jld2")
+    results_savename = savename("Henucleus_results", data, "jld2")
+
+    #wsave(datadir("Henucleus", "points", points_savename), @strdict a β γ nMoves nThermMoves metroStep startingPoint points)
+    wsave(datadir("Henucleus", "results", results_savename), @strdict a β γ nMoves nThermMoves metroStep startingPoint mean sigma roa)
 
 end
