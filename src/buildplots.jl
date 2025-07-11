@@ -19,6 +19,14 @@ function plot_onedharm(nMoves, nThermMoves, metroStep, startingPoint, alphamin, 
 
 end
 
+function plot_onedharm_corr(nMoves, nThermMoves, metroStep, startingPoint, starting_alpha)
+    #Load results of simulations data folder
+    df = collect_results!(datadir("onedharm", "corr_results_table.jld2"), datadir("onedharm", "corr_results"))
+    # Select only the data of interest
+    subset!(df)
+end
+
+
 
 #nMoves, nThermMoves, metroStep, startingPoint, alphamin, alphamax
-plot_onedharm(100000, 100, 1., 0., 0.8, 1.2)
+#plot_onedharm(100000, 100, 1., 0., 0.8, 1.2)

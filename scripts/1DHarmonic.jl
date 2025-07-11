@@ -1,53 +1,67 @@
-using DrWatson
-@quickactivate "VariationalMonteCarlo"
+using Distributed
+@everywhere using DrWatson
 
-# Include modules from src
-includet(srcdir("MonteCarlo.jl"))
-includet(srcdir("1DHarm_functions.jl"))
-includet(srcdir("simulations.jl"))
+@everywhere begin
+    @quickactivate "VariationalMonteCarlo"
+    using Revise: includet
+    includet(srcdir("simulations.jl"))
+end
 
-# Start the plotting module
-using Plots
-gr()
+#using DrWatson
+#@quickactivate "VariationalMonteCarlo"
+#includet(srcdir("simulations.jl"))
 
-# Choose an interval for the parameter alpha to analyze
-alphas = collect(range(0.9, 1.1, 21))
+function onedharm()
 
-# Decide all parameters for MonteCarlo method
-nMoves = 100000
-nThermMoves = 100
-metroStep = 1.0
-startingPoint = 0.0
+    # Choose an interval for the parameter alpha to analyze
+    alphas = collect(range(0.9, 1.1, 21))
 
-#Create the dictionaries for simulations
-d = Dict()
-d[:nMoves] = nMoves
-d[:nThermMoves] = nThermMoves
-d[:metroStep] = metroStep
-d[:startingPoint] = startingPoint
-d[:alpha] = alphas
+    # Decide all parameters for MonteCarlo method
+    nMoves = 100000
+    nThermMoves = 100
+    metroStep = 1.0
+    startingPoint = 0.0
 
-#Then create all possible input combinations
-dicts = dict_list(d)
+    #Create the dictionaries for simulations
+    d = Dict()
+    d[:nMoves] = nMoves
+    d[:nThermMoves] = nThermMoves
+    d[:metroStep] = metroStep
+    d[:startingPoint] = startingPoint
+    d[:alpha] = alphas
 
-#Then evaluate for each combination
-map(simulation_onedharm, dicts)
+    #Then create all possible input combinations
+    dicts = dict_list(d)
 
+    #Then evaluate for each combination
+    pmap(simulation_onedharm, dicts)
 
-# Initialize the vector in which to store points
-#points = Vector{Float64}(undef, nMoves)
-# Initialize the vectors in  which to store the results
-#means = Vector{Float64}()
-#sigmas = Vector{Float64}()
+end
 
-#for alpha in alphas
-    # Generate points for the given alpha
-#    points, roa = MonteCarlo.metropolis(OneDHarm.harmimpsampling(alpha), nMoves, nThermMoves, metroStep, startingPoint)
-    # Evaluate the results
-#    mean, sigma = MonteCarlo.evaluate(points, OneDHarm.harmlocalen(alpha))
-#    println(mean, "  +/-  ", sigma)
-#    push!(means, mean)
-#    push!(sigmas, sigma)
-#end
+function onedharm__corr()
+    #Choose a parameter from which to generate the points
+    starting_alpha = 1.0
+    nPoints = 100
+    alphastep = 0.005
 
-#scatter(alphas, means; yerror=sigmas)
+    # Decide all parameters for MonteCarlo method
+    nMoves = 100000
+    nThermMoves = 100
+    metroStep = 1.0
+    startingPoint = 0.0
+
+    #Create the dictionaries for simulations
+    d = Dict()
+    d[:nMoves] = nMoves
+    d[:nThermMoves] = nThermMoves
+    d[:metroStep] = metroStep
+    d[:startingPoint] = startingPoint
+    d[:starting_alpha] = starting_alpha
+    d[:nPoints] = nPoints
+    d[:alphastep] = alphastep
+
+    dicts = dict_list(d)
+
+    pmap(simulation_onedharm_corr, dicts)
+    
+end
